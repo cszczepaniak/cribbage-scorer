@@ -1,0 +1,314 @@
+[
+    {
+      "suit": "hearts",
+      "value": 2,
+      "rank": "2",
+      "code": "2H"
+    },
+    {
+      "suit": "hearts",
+      "value": 3,
+      "rank": "3",
+      "code": "3H"
+    },
+    {
+      "suit": "hearts",
+      "value": 4,
+      "rank": "4",
+      "code": "4H"
+    },
+    {
+      "suit": "hearts",
+      "value": 5,
+      "rank": "5",
+      "code": "5H"
+    },
+    {
+      "suit": "hearts",
+      "value": 6,
+      "rank": "6",
+      "code": "6H"
+    },
+    {
+      "suit": "hearts",
+      "value": 7,
+      "rank": "7",
+      "code": "7H"
+    },
+    {
+      "suit": "hearts",
+      "value": 8,
+      "rank": "8",
+      "code": "8H"
+    },
+    {
+      "suit": "hearts",
+      "value": 9,
+      "rank": "9",
+      "code": "9H"
+    },
+    {
+      "suit": "hearts",
+      "value": 10,
+      "rank": "0",
+      "code": "10H"
+    },
+    {
+      "suit": "hearts",
+      "value": 11,
+      "rank": "J",
+      "code": "JH"
+    },
+    {
+      "suit": "hearts",
+      "value": 12,
+      "rank": "Q",
+      "code": "QH"
+    },
+    {
+      "suit": "hearts",
+      "value": 13,
+      "rank": "K",
+      "code": "KH"
+    },
+    {
+      "suit": "hearts",
+      "value": 1,
+      "rank": "A",
+      "code": "AH"
+    },
+    {
+      "suit": "diamonds",
+      "value": 2,
+      "rank": "2",
+      "code": "2D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 3,
+      "rank": "3",
+      "code": "3D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 4,
+      "rank": "4",
+      "code": "4D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 5,
+      "rank": "5",
+      "code": "5D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 6,
+      "rank": "6",
+      "code": "6D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 7,
+      "rank": "7",
+      "code": "7D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 8,
+      "rank": "8",
+      "code": "8D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 9,
+      "rank": "9",
+      "code": "9D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 10,
+      "rank": "10",
+      "code": "10D"
+    },
+    {
+      "suit": "diamonds",
+      "value": 11,
+      "rank": "J",
+      "code": "JD"
+    },
+    {
+      "suit": "diamonds",
+      "value": 12,
+      "rank": "Q",
+      "code": "QD"
+    },
+    {
+      "suit": "diamonds",
+      "value": 13,
+      "rank": "K",
+      "code": "KD"
+    },
+    {
+      "suit": "diamonds",
+      "value": 1,
+      "rank": "A",
+      "code": "AD"
+    },
+    {
+      "suit": "clubs",
+      "value": 2,
+      "rank": "2",
+      "code": "2C"
+    },
+    {
+      "suit": "clubs",
+      "value": 3,
+      "rank": "3",
+      "code": "3C"
+    },
+    {
+      "suit": "clubs",
+      "value": 4,
+      "rank": "4",
+      "code": "4C"
+    },
+    {
+      "suit": "clubs",
+      "value": 5,
+      "rank": "5",
+      "code": "5C"
+    },
+    {
+      "suit": "clubs",
+      "value": 6,
+      "rank": "6",
+      "code": "6C"
+    },
+    {
+      "suit": "clubs",
+      "value": 7,
+      "rank": "7",
+      "code": "7C"
+    },
+    {
+      "suit": "clubs",
+      "value": 8,
+      "rank": "8",
+      "code": "8C"
+    },
+    {
+      "suit": "clubs",
+      "value": 9,
+      "rank": "9",
+      "code": "9C"
+    },
+    {
+      "suit": "clubs",
+      "value": 10,
+      "rank": "10",
+      "code": "10C"
+    },
+    {
+      "suit": "clubs",
+      "value": 11,
+      "rank": "J",
+      "code": "JC"
+    },
+    {
+      "suit": "clubs",
+      "value": 12,
+      "rank": "Q",
+      "code": "QC"
+    },
+    {
+      "suit": "clubs",
+      "value": 13,
+      "rank": "K",
+      "code": "KC"
+    },
+    {
+      "suit": "clubs",
+      "value": 1,
+      "rank": "A",
+      "code": "AC"
+    },
+    {
+      "suit": "spades",
+      "value": 2,
+      "rank": "2",
+      "code": "2S"
+    },
+    {
+      "suit": "spades",
+      "value": 3,
+      "rank": "3",
+      "code": "3S"
+    },
+    {
+      "suit": "spades",
+      "value": 4,
+      "rank": "4",
+      "code": "4S"
+    },
+    {
+      "suit": "spades",
+      "value": 5,
+      "rank": "5",
+      "code": "5S"
+    },
+    {
+      "suit": "spades",
+      "value": 6,
+      "rank": "6",
+      "code": "6S"
+    },
+    {
+      "suit": "spades",
+      "value": 7,
+      "rank": "7",
+      "code": "7S"
+    },
+    {
+      "suit": "spades",
+      "value": 8,
+      "rank": "8",
+      "code": "8S"
+    },
+    {
+      "suit": "spades",
+      "value": 9,
+      "rank": "9",
+      "code": "9S"
+    },
+    {
+      "suit": "spades",
+      "value": 10,
+      "rank": "10",
+      "code": "10S"
+    },
+    {
+      "suit": "spades",
+      "value": 11,
+      "rank": "J",
+      "code": "JS"
+    },
+    {
+      "suit": "spades",
+      "value": 12,
+      "rank": "Q",
+      "code": "QS"
+    },
+    {
+      "suit": "spades",
+      "value": 13,
+      "rank": "K",
+      "code": "KS"
+    },
+    {
+      "suit": "spades",
+      "value": 1,
+      "rank": "A",
+      "code": "AS"
+    }
+  ]
