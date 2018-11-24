@@ -3,11 +3,11 @@ enum Suit_T {
     diamonds = 1,
     clubs = 2,
     spades = 3
-}
+};
 
-typedef struct {
+typedef struct Card {
     int rank;
     int value;
     char* name;
-    Suit_T suit;
+    enum Suit_T suit;
 } Card_T;
