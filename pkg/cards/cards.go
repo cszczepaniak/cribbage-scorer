@@ -7,7 +7,7 @@ import(
 )
 
 var AllCards []Card
-var CardMap map[string]Card
+var CardMap = make(map[string]Card)
 
 type Card struct {
 	Suit  string `json:"suit"`
@@ -17,10 +17,8 @@ type Card struct {
 }
 
 func init() {
-	dat, _ := ioutil.ReadFile("../cards.json")
+	dat, _ := ioutil.ReadFile("cards.json")
 	json.Unmarshal(dat, &AllCards)
-
-	CardMap := make(map[string]Card)
 
 	for _, card := range AllCards {
 		CardMap[card.Code] = card

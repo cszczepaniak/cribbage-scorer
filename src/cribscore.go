@@ -1,37 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
+	"../pkg/cards"
 )
 
-var cards []Card
-
-type Card struct {
-	Suit  string `json:"suit"`
-	Value int    `json:"value"`
-	Rank  string `json:"rank"`
-	Code  string `json:"code"`
-}
-
 func main() {
-	dat, _ := ioutil.ReadFile("../cards.json")
-	json.Unmarshal(dat, &cards)
-
-	m := make(map[string]Card)
-	hand := make([]Card, 0, 5)
-
-	for _, card := range cards {
-		m[card.Code] = card
-	}
+	hand := make([]cards.Card, 0, 5)
 
 	clargs := os.Args[1:]
 	for _, code := range clargs {
-		hand = append(hand, m[code])
+		hand = append(hand, cards.CardMap[code])
 	}
 
+	for _, card := range hand {
+		cards.Print(card)
+	}
 	fmt.Println(findFifteens(hand))
 }
 
@@ -46,18 +31,18 @@ func ncomb(n, m int) int {
 	return fact(n) / (fact(m) * fact(n - m))
 }
 
-func comb(m int, set []Card) [][]Card {
+func comb(m int, set []cards.Card) [][]cards.Card {
 	n := len(set)
-	res := make([]Card, m)
+	res := make([]cards.Card, m)
 	last := m - 1
 	total := ncomb(n, m)
-	ret := make([][]Card, 0, total)
+	ret := make([][]cards.Card, 0, total)
     var rc func(int, int)
     rc = func(i, next int) {
         for j := next; j < n; j++ {
 			res[i] = set[j]
             if i == last {
-				newArr := make([]Card, m)
+				newArr := make([]cards.Card, m)
 				for i, val := range res {
 					newArr[i] = val
 				}
@@ -73,7 +58,7 @@ func comb(m int, set []Card) [][]Card {
 	return ret
 }
 
-func findNPairs(hand []Card) int {
+func findNPairs(hand []cards.Card) int {
 	n := 0
 
 	allPairs := comb(2, hand)
@@ -86,7 +71,7 @@ func findNPairs(hand []Card) int {
 	return n
 }
 
-func findFifteens(hand []Card) int {
+func findFifteens(hand []cards.Card) int {
 	n := 0
 
 	for i := 2; i <= len(hand); i++ {
