@@ -1,21 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
+
 	"../pkg/cards"
 )
 
 func main() {
 	hand := make([]cards.Card, 0, 5)
 
-	clargs := os.Args[1:]
+	cutPtr := flag.String("cut", "", "the cut card")
+	flag.Parse()
+
+	clargs := flag.Args()
 	for _, code := range clargs {
 		hand = append(hand, cards.CardMap[code])
 	}
 
-	for _, card := range hand {
-		cards.Print(card)
-	}
-	fmt.Println(cards.FindNPairs(hand))
+	myHand := cards.Hand{Cards: hand, Cut: cards.CardMap[*cutPtr], IsCrib: false}
+	fmt.Println(myHand.AllCards())
+	fmt.Println("Score:", cards.ScoreHand(myHand))
 }

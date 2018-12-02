@@ -33,14 +33,14 @@ func combinations(m int, set []Card) [][]Card {
 	return ret
 }
 
-func ScoreHand(hand []Card) int {
+func ScoreHand(hand Hand) int {
 	return ScorePairs(hand) + ScoreFifteens(hand) + ScoreRuns(hand)
 }
 
-func ScorePairs(hand []Card) int {
+func ScorePairs(hand Hand) int {
 	score := 0
 
-	allPairs := combinations(2, hand)
+	allPairs := combinations(2, hand.AllCards())
 	for _, val := range allPairs {
 		if val[0].Rank == val[1].Rank {
 			score += 2
@@ -50,11 +50,11 @@ func ScorePairs(hand []Card) int {
 	return score
 }
 
-func ScoreFifteens(hand []Card) int {
+func ScoreFifteens(hand Hand) int {
 	score := 0
 
-	for i := 2; i <= len(hand); i++ {
-		for _, cards := range combinations(i, hand) {
+	for i := 2; i <= len(hand.AllCards()); i++ {
+		for _, cards := range combinations(i, hand.AllCards()) {
 
 			sum := 0
 			for _, card := range cards {
@@ -70,11 +70,11 @@ func ScoreFifteens(hand []Card) int {
 	return score
 }
 
-func ScoreRuns(hand []Card) int {
+func ScoreRuns(hand Hand) int {
 	score := 0
 	minIdx := 2
 	for i := 5; i > minIdx; i-- {
-		for _, cards := range combinations(i, hand) {
+		for _, cards := range combinations(i, hand.AllCards()) {
 			sort.Slice(cards, func(i, j int) bool { return cards[i].Rank < cards[j].Rank })
 			if isRun(cards) {
 				score += i

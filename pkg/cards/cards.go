@@ -17,6 +17,16 @@ type Card struct {
 	Code  string `json:"code"`
 }
 
+type Hand struct {
+	Cards  []Card
+	Cut    Card
+	IsCrib bool
+}
+
+func (h Hand) AllCards() []Card {
+	return append(h.Cards, h.Cut)
+}
+
 func init() {
 	dat, _ := ioutil.ReadFile("cards.json")
 	json.Unmarshal(dat, &AllCards)
@@ -26,6 +36,6 @@ func init() {
 	}
 }
 
-func Print(card Card) {
-	fmt.Println(card.Name, "of", card.Suit)
+func (c Card) Print() {
+	fmt.Println(c.Name, "of", c.Suit)
 }
