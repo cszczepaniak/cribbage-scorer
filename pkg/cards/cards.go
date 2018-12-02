@@ -1,6 +1,6 @@
 package cards
 
-import(
+import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -12,7 +12,8 @@ var CardMap = make(map[string]Card)
 type Card struct {
 	Suit  string `json:"suit"`
 	Value int    `json:"value"`
-	Rank  string `json:"rank"`
+	Rank  int    `json:"rank"`
+	Name  string `json:"name"`
 	Code  string `json:"code"`
 }
 
@@ -26,5 +27,5 @@ func init() {
 }
 
 func Print(card Card) {
-	fmt.Println(card.Rank, "of", card.Suit)
+	fmt.Println(card.Name, "of", card.Suit)
 }
