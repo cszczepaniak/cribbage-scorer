@@ -3,8 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-
-	"../pkg/cards"
 )
 
 func main() {
