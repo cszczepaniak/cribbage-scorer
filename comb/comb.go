@@ -7,6 +7,6 @@ func Factorial(n int) int {
 	return n * Factorial(n-1)
 }
 
-func Ncomb(n, m int) int {
-	return Factorial(n) / (Factorial(m) * Factorial(n-m))
+func Nchoosek(n, k int) int {
+	return Factorial(n) / (Factorial(k) * Factorial(n-k))
 }
