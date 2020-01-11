@@ -1,10 +1,17 @@
 package comb
 
+import "fmt"
+
 var cache map[int]int
+
+func init() {
+	cache = make(map[int]int)
+}
 
 func Factorial(n int) int {
 	res, ok := cache[n]
 	if ok {
+		fmt.Println(`using map`)
 		return res
 	}
 	if n <= 1 {
