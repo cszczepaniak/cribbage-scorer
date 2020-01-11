@@ -61,3 +61,36 @@ func TestNChooseK(t *testing.T) {
 		assert.Equal(t, tc.exp, res)
 	}
 }
+
+func TestCombinations(t *testing.T) {
+	type dummyType struct {
+		a int
+	}
+	tests := []struct {
+		superset []interface{}
+		n        int
+	}{{
+		superset: []interface{}{1, 2, 3},
+		n:        1,
+	}, {
+		superset: []interface{}{1, 2, 3, 4, 5},
+		n:        3,
+	}, {
+		superset: []interface{}{1, 2, 3, 4, 5},
+		n:        3,
+	}, {
+		superset: []interface{}{
+			dummyType{a: 1},
+			dummyType{a: 2},
+			dummyType{a: 3},
+			dummyType{a: 4},
+			dummyType{a: 5},
+			dummyType{a: 6},
+		},
+		n: 3,
+	}}
+	for _, tc := range tests {
+		combs := Combinations(tc.superset, tc.n)
+		assert.Len(t, combs, Nchoosek(len(tc.superset), tc.n))
+	}
+}
