@@ -1,12 +1,12 @@
 package comb
 
-func Fact(n int) int {
+func Factorial(n int) int {
 	if n == 0 {
 		return 1
 	}
-	return n * Fact(n-1)
+	return n * Factorial(n-1)
 }
 
 func Ncomb(n, m int) int {
-	return Fact(n) / (Fact(m) * Fact(n-m))
+	return Factorial(n) / (Factorial(m) * Factorial(n-m))
 }
