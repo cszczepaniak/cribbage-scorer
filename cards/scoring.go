@@ -3,7 +3,7 @@ package cards
 import (
 	"sort"
 
-	"../comb"
+	"github.com/cszczepaniak/cribbage-scorer/comb"
 )
 
 func combinations(m int, set []Card) [][]Card {

@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
+
+	"github.com/cszczepaniak/cribbage-scorer/cards"
 )
 
 func main() {
