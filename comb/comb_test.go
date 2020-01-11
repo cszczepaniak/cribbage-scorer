@@ -11,6 +11,9 @@ func TestFactorial(t *testing.T) {
 		n   int
 		exp int
 	}{{
+		n:   -1,
+		exp: 1,
+	}, {
 		n:   0,
 		exp: 1,
 	}, {
