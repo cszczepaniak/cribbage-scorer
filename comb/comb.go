@@ -1,10 +1,19 @@
 package comb
 
+var cache map[int]int
+
 func Factorial(n int) int {
-	if n == 0 {
-		return 1
+	res, ok := cache[n]
+	if ok {
+		return res
 	}
-	return n * Factorial(n-1)
+	if n <= 1 {
+		res = 1
+	} else {
+		res = n * Factorial(n-1)
+	}
+	cache[n] = res
+	return res
 }
 
 func Nchoosek(n, k int) int {
