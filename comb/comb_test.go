@@ -34,3 +34,30 @@ func TestFactorial(t *testing.T) {
 		assert.Equal(t, tc.exp, res)
 	}
 }
+func TestNChooseK(t *testing.T) {
+	tests := []struct {
+		n   int
+		k   int
+		exp int
+	}{{
+		n:   3,
+		k:   1,
+		exp: 3,
+	}, {
+		n:   6,
+		k:   6,
+		exp: 1,
+	}, {
+		n:   6,
+		k:   4,
+		exp: 15,
+	}, {
+		n:   6,
+		k:   3,
+		exp: 20,
+	}}
+	for _, tc := range tests {
+		res := Nchoosek(tc.n, tc.k)
+		assert.Equal(t, tc.exp, res)
+	}
+}
