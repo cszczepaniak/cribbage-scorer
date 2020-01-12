@@ -11,6 +11,15 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
+func ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	err := validateHand(hand)
+	if err != nil {
+		return 0, err
+	}
+	return (scoreFifteens(hand, cut) + scorePairs(hand, cut) + scoreFlush(hand, cut, isCrib) +
+		scoreRuns(hand, cut) + scoreNobs(hand, cut)), nil
+}
+
 func scoreRuns(hand []cards.Card, cut cards.Card) int {
 	all := append(hand, cut)
 	for i := 5; i > 2; i-- {
@@ -31,7 +40,7 @@ func scoreRun(set []cards.Card) int {
 	for i := 0; i < len(sorted)-1; i++ {
 		thisCard := sorted[i]
 		nextCard := sorted[i+1]
-		if thisCard.Value()+1 != nextCard.Value() {
+		if thisCard.Rank+1 != nextCard.Rank {
 			return 0
 		}
 	}
@@ -50,15 +59,11 @@ func scoreNobs(hand []cards.Card, cut cards.Card) int {
 	return 0
 }
 
-func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
-	err := validateHand(hand)
-	if err != nil {
-		return 0, err
-	}
+func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) int {
 	if isCrib {
-		return scoreCribFlush(hand, cut), nil
+		return scoreCribFlush(hand, cut)
 	}
-	return scoreHandFlush(hand, cut), nil
+	return scoreHandFlush(hand, cut)
 }
 
 func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
@@ -90,10 +95,10 @@ func scoreHandFlush(hand []cards.Card, cut cards.Card) int {
 	return score
 }
 
-func scorePairs(hand []cards.Card, cut cards.Card) (int, error) {
+func scorePairs(hand []cards.Card, cut cards.Card) int {
 	err := validateHand(hand)
 	if err != nil {
-		return 0, err
+		return 0
 	}
 	all := append(hand, cut)
 	combs := comb.Combinations(all, 2)
@@ -103,13 +108,13 @@ func scorePairs(hand []cards.Card, cut cards.Card) (int, error) {
 			score += 2
 		}
 	}
-	return score, nil
+	return score
 }
 
-func scoreFifteens(hand []cards.Card, cut cards.Card) (int, error) {
+func scoreFifteens(hand []cards.Card, cut cards.Card) int {
 	err := validateHand(hand)
 	if err != nil {
-		return 0, err
+		return 0
 	}
 	all := append(hand, cut)
 	score := 0
@@ -125,7 +130,7 @@ func scoreFifteens(hand []cards.Card, cut cards.Card) (int, error) {
 			}
 		}
 	}
-	return score, nil
+	return score
 }
 
 func validateHand(hand []cards.Card) error {
