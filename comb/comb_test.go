@@ -3,6 +3,9 @@ package comb
 import (
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
+	"github.com/cszczepaniak/cribbage-scorer/cards"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -63,34 +66,30 @@ func TestNChooseK(t *testing.T) {
 }
 
 func TestCombinations(t *testing.T) {
-	type dummyType struct {
-		a int
-	}
 	tests := []struct {
-		superset []interface{}
+		superset []string
 		n        int
 	}{{
-		superset: []interface{}{1, 2, 3},
+		superset: []string{`ah`, `2h`, `3h`},
 		n:        1,
 	}, {
-		superset: []interface{}{1, 2, 3, 4, 5},
+		superset: []string{`ah`, `2h`, `3h`, `4h`, `5s`},
+		n:        4,
+	}, {
+		superset: []string{`ah`, `2h`, `3h`, `4h`, `5s`},
 		n:        3,
 	}, {
-		superset: []interface{}{1, 2, 3, 4, 5},
+		superset: []string{`ah`, `2h`, `3h`, `4h`, `5s`, `10d`},
 		n:        3,
-	}, {
-		superset: []interface{}{
-			dummyType{a: 1},
-			dummyType{a: 2},
-			dummyType{a: 3},
-			dummyType{a: 4},
-			dummyType{a: 5},
-			dummyType{a: 6},
-		},
-		n: 3,
 	}}
 	for _, tc := range tests {
-		combs := Combinations(tc.superset, tc.n)
+		cds := make([]cards.Card, len(tc.superset))
+		for i, s := range tc.superset {
+			c, err := cards.NewCardFromString(s)
+			require.NoError(t, err)
+			cds[i] = c
+		}
+		combs := Combinations(cds, tc.n)
 		assert.Len(t, combs, Nchoosek(len(tc.superset), tc.n))
 	}
 }

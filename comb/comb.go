@@ -1,5 +1,9 @@
 package comb
 
+import (
+	"github.com/cszczepaniak/cribbage-scorer/cards"
+)
+
 var cache map[int]int
 
 func init() {
@@ -24,26 +28,26 @@ func Nchoosek(n, k int) int {
 	return Factorial(n) / (Factorial(k) * Factorial(n-k))
 }
 
-func Combinations(superset []interface{}, n int) [][]interface{} {
+func Combinations(superset []cards.Card, n int) [][]cards.Card {
 	if len(superset) == n {
-		return [][]interface{}{superset}
+		return [][]cards.Card{superset}
 	}
 	if n == 1 {
-		res := make([][]interface{}, len(superset))
-		for i, m := range res {
-			res[i] = []interface{}{m}
+		res := make([][]cards.Card, len(superset))
+		for i, c := range superset {
+			res[i] = []cards.Card{c}
 		}
 		return res
 	}
-	res := make([][]interface{}, 0)
-	for i, m := range superset {
+	res := make([][]cards.Card, 0)
+	for i, card := range superset {
 		if i > len(superset)-n {
 			break
 		}
 		others := superset[i+1:]
 		combs := Combinations(others, n-1)
-		for _, c := range combs {
-			set := append([]interface{}{m}, c)
+		for _, comb := range combs {
+			set := append([]cards.Card{card}, comb...)
 			res = append(res, set)
 		}
 	}
