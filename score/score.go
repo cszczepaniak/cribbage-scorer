@@ -11,7 +11,7 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
-func scoreFifteens(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+func scoreFifteens(hand []cards.Card, cut cards.Card) (int, error) {
 	err := validateHand(hand)
 	if err != nil {
 		return 0, err
