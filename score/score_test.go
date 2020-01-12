@@ -208,3 +208,32 @@ func TestScoreFlush(t *testing.T) {
 		assert.Equal(t, tc.expScore, score)
 	}
 }
+func TestScoreNobs(t *testing.T) {
+	tests := []struct {
+		desc     string
+		hand     []string
+		cut      string
+		expScore int
+	}{{
+		desc:     `a hand`,
+		hand:     []string{`ah`, `2h`, `3h`, `jh`},
+		cut:      `4h`,
+		expScore: 1,
+	}, {
+		desc:     `a hand`,
+		hand:     []string{`ah`, `2h`, `3h`, `jh`},
+		cut:      `4c`,
+		expScore: 0,
+	}, {
+		desc:     `a hand`,
+		hand:     []string{`jc`, `jd`, `jh`, `js`},
+		cut:      `4c`,
+		expScore: 1,
+	}}
+	for _, tc := range tests {
+		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
+		require.NoError(t, err)
+		score := scoreNobs(hand, cut)
+		assert.Equal(t, tc.expScore, score)
+	}
+}

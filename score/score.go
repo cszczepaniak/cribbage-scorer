@@ -11,6 +11,18 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
+func scoreNobs(hand []cards.Card, cut cards.Card) int {
+	if cut.Rank == 11 {
+		return 0
+	}
+	for _, c := range hand {
+		if c.Rank == 11 && c.Suit == cut.Suit {
+			return 1
+		}
+	}
+	return 0
+}
+
 func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
 	err := validateHand(hand)
 	if err != nil {
