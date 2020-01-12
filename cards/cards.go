@@ -91,12 +91,6 @@ func rankFromString(s string) (int, error) {
 	}
 }
 
-type Hand struct {
-	Cards  []Card
-	Cut    Card
-	IsCrib bool
-}
-
 func (c Card) String() string {
 	return c.Name
 }
