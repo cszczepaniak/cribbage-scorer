@@ -3,9 +3,8 @@ package score
 import (
 	"errors"
 
-	"github.com/cszczepaniak/cribbage-scorer/comb"
-
 	"github.com/cszczepaniak/cribbage-scorer/cards"
+	"github.com/cszczepaniak/cribbage-scorer/comb"
 )
 
 var (
