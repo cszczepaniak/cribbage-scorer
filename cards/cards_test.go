@@ -4,7 +4,47 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
+
+func makeHandFromStrings(strs []string) ([]Card, error) {
+	hand := make([]Card, len(strs))
+	for i, s := range strs {
+		c, err := NewCardFromString(s)
+		if err != nil {
+			return nil, err
+		}
+		hand[i] = c
+	}
+	return hand, nil
+}
+
+func TestSortByRankAscending(t *testing.T) {
+	tests := []struct {
+		hand []string
+		exp  []string
+	}{{
+		hand: []string{`10h`, `8h`, `6h`, `4h`},
+		exp:  []string{`4h`, `6h`, `8h`, `10h`},
+	}, {
+		hand: []string{`10h`, `8h`, `8s`, `4h`},
+		exp:  []string{`4h`, `8h`, `8s`, `10h`},
+	}, {
+		hand: []string{`10h`, `8h`, `6h`},
+		exp:  []string{`6h`, `8h`, `10h`},
+	}, {
+		hand: []string{`10h`, `6h`, `8h`, `ks`, `as`},
+		exp:  []string{`as`, `6h`, `8h`, `10h`, `ks`},
+	}}
+	for _, tc := range tests {
+		hand, err := makeHandFromStrings(tc.hand)
+		require.NoError(t, err)
+		exp, err := makeHandFromStrings(tc.exp)
+		require.NoError(t, err)
+		sorted := SortByRankAscending(hand)
+		assert.Equal(t, exp, sorted)
+	}
+}
 
 func TestNewCardFromString(t *testing.T) {
 	tests := []struct {
