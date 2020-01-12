@@ -38,8 +38,15 @@ func NewCardFromString(s string) (Card, error) {
 	return Card{
 		Suit: suit,
 		Rank: rank,
-		Name: s,
+		Name: strings.ToLower(s),
 	}, nil
+}
+
+func (c Card) Value() int {
+	if c.Rank < 11 {
+		return c.Rank
+	}
+	return 10
 }
 
 func suitFromString(s string) (Suit, error) {
