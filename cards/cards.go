@@ -2,6 +2,7 @@ package cards
 
 import (
 	"errors"
+	"sort"
 	"strings"
 )
 
@@ -47,6 +48,15 @@ func (c Card) Value() int {
 		return c.Rank
 	}
 	return 10
+}
+
+func SortByRankAscending(set []Card) []Card {
+	setCopy := make([]Card, len(set))
+	copy(setCopy, set)
+	sort.Slice(setCopy, func(i, j int) bool {
+		return setCopy[i].Rank < setCopy[j].Rank
+	})
+	return setCopy
 }
 
 func suitFromString(s string) (Suit, error) {
