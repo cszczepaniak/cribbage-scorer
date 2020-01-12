@@ -40,18 +40,6 @@ func TestScoreFifteens(t *testing.T) {
 		cut:      `5h`,
 		expScore: 2,
 		expErr:   nil,
-	}, {
-		desc:     `hand too small`,
-		hand:     []string{`ah`, `2h`, `3h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
-	}, {
-		desc:     `hand too big`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`, `6h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
 	}}
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
@@ -108,18 +96,6 @@ func TestScorePairs(t *testing.T) {
 		cut:      `5h`,
 		expScore: 0,
 		expErr:   nil,
-	}, {
-		desc:     `hand too small`,
-		hand:     []string{`ah`, `2h`, `3h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
-	}, {
-		desc:     `hand too big`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`, `6h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
 	}}
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
@@ -183,18 +159,6 @@ func TestScoreFlush(t *testing.T) {
 		isCrib:   true,
 		expScore: 5,
 		expErr:   nil,
-	}, {
-		desc:     `hand too small`,
-		hand:     []string{`ah`, `2h`, `3h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
-	}, {
-		desc:     `hand too big`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`, `6h`},
-		cut:      `5h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
 	}}
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
