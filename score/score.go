@@ -11,6 +11,46 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
+func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	err := validateHand(hand)
+	if err != nil {
+		return 0, err
+	}
+	if isCrib {
+		return scoreCribFlush(hand, cut), nil
+	}
+	return scoreHandFlush(hand, cut), nil
+}
+
+func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
+	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
+	suitMap[hand[0].Suit] = struct{}{}
+	for _, c := range hand[1:] {
+		if _, ok := suitMap[c.Suit]; !ok {
+			return 0
+		}
+	}
+	if _, ok := suitMap[cut.Suit]; !ok {
+		return 0
+	}
+	return 5
+}
+
+func scoreHandFlush(hand []cards.Card, cut cards.Card) int {
+	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
+	suitMap[hand[0].Suit] = struct{}{}
+	for _, c := range hand[1:] {
+		if _, ok := suitMap[c.Suit]; !ok {
+			return 0
+		}
+	}
+	score := 4
+	if _, ok := suitMap[cut.Suit]; ok {
+		score++
+	}
+	return score
+}
+
 func scorePairs(hand []cards.Card, cut cards.Card) (int, error) {
 	err := validateHand(hand)
 	if err != nil {

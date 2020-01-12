@@ -133,3 +133,78 @@ func TestScorePairs(t *testing.T) {
 		assert.Equal(t, tc.expScore, score)
 	}
 }
+func TestScoreFlush(t *testing.T) {
+	tests := []struct {
+		desc     string
+		hand     []string
+		cut      string
+		isCrib   bool
+		expScore int
+		expErr   error
+	}{{
+		desc:     `a hand`,
+		hand:     []string{`ah`, `2h`, `3h`, `4s`},
+		cut:      `5h`,
+		isCrib:   false,
+		expScore: 0,
+		expErr:   nil,
+	}, {
+		desc:     `a hand`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`},
+		cut:      `5s`,
+		isCrib:   false,
+		expScore: 4,
+		expErr:   nil,
+	}, {
+		desc:     `a hand`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`},
+		cut:      `5h`,
+		isCrib:   false,
+		expScore: 5,
+		expErr:   nil,
+	}, {
+		desc:     `a crib`,
+		hand:     []string{`ah`, `2h`, `3h`, `4s`},
+		cut:      `5h`,
+		isCrib:   true,
+		expScore: 0,
+		expErr:   nil,
+	}, {
+		desc:     `a crib`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`},
+		cut:      `5s`,
+		isCrib:   true,
+		expScore: 0,
+		expErr:   nil,
+	}, {
+		desc:     `a crib`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`},
+		cut:      `5h`,
+		isCrib:   true,
+		expScore: 5,
+		expErr:   nil,
+	}, {
+		desc:     `hand too small`,
+		hand:     []string{`ah`, `2h`, `3h`},
+		cut:      `5h`,
+		expScore: 0,
+		expErr:   ErrInvalidHandSize,
+	}, {
+		desc:     `hand too big`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`, `6h`},
+		cut:      `5h`,
+		expScore: 0,
+		expErr:   ErrInvalidHandSize,
+	}}
+	for _, tc := range tests {
+		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
+		require.NoError(t, err)
+		score, err := scoreFlush(hand, cut, tc.isCrib)
+		if tc.expErr != nil {
+			assert.EqualError(t, err, tc.expErr.Error())
+		} else {
+			assert.NoError(t, err)
+		}
+		assert.Equal(t, tc.expScore, score)
+	}
+}
