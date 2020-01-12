@@ -11,6 +11,33 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
+func scoreRuns(hand []cards.Card, cut cards.Card) int {
+	all := append(hand, cut)
+	for i := 5; i > 2; i-- {
+		score := 0
+		combs := comb.Combinations(all, i)
+		for _, comb := range combs {
+			score += scoreRun(comb)
+		}
+		if score > 0 {
+			return score
+		}
+	}
+	return 0
+}
+
+func scoreRun(set []cards.Card) int {
+	sorted := cards.SortByRankAscending(set)
+	for i := 0; i < len(sorted)-1; i++ {
+		thisCard := sorted[i]
+		nextCard := sorted[i+1]
+		if thisCard.Value()+1 != nextCard.Value() {
+			return 0
+		}
+	}
+	return len(set)
+}
+
 func scoreNobs(hand []cards.Card, cut cards.Card) int {
 	if cut.Rank == 11 {
 		return 0
