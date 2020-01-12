@@ -11,6 +11,22 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
+func scorePairs(hand []cards.Card, cut cards.Card) (int, error) {
+	err := validateHand(hand)
+	if err != nil {
+		return 0, err
+	}
+	all := append(hand, cut)
+	combs := comb.Combinations(all, 2)
+	score := 0
+	for _, comb := range combs {
+		if comb[0].Rank == comb[1].Rank {
+			score += 2
+		}
+	}
+	return score, nil
+}
+
 func scoreFifteens(hand []cards.Card, cut cards.Card) (int, error) {
 	err := validateHand(hand)
 	if err != nil {
