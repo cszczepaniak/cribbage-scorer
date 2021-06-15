@@ -101,12 +101,12 @@ func TestNewCardFromString(t *testing.T) {
 		desc:     `invalid string`,
 		str:      `aaaa`,
 		exp:      Card{},
-		expError: ErrInvalidCardString,
+		expError: ErrInvalidCardString(`aaaa`),
 	}, {
 		desc:     `invalid string`,
 		str:      `a`,
 		exp:      Card{},
-		expError: ErrInvalidCardString,
+		expError: ErrInvalidCardString(`a`),
 	}}
 	for _, tc := range tests {
 		c, err := NewCardFromString(tc.str)

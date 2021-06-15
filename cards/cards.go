@@ -2,15 +2,19 @@ package cards
 
 import (
 	"errors"
+	"fmt"
 	"sort"
 	"strings"
 )
 
 var (
-	ErrInvalidCardString = errors.New(`invalid card string`)
-	ErrInvalidSuit       = errors.New(`invalid suit`)
-	ErrInvalidRank       = errors.New(`invalid rank`)
+	ErrInvalidSuit = errors.New(`invalid suit`)
+	ErrInvalidRank = errors.New(`invalid rank`)
 )
+
+func ErrInvalidCardString(got string) error {
+	return fmt.Errorf(`invalid card string: %s`, got)
+}
 
 type Suit int
 
@@ -63,7 +67,7 @@ func suitFromString(s string) (Suit, error) {
 	s = strings.ToLower(s)
 	runes := []rune(s)
 	if len(runes) > 3 || len(runes) < 2 {
-		return -1, ErrInvalidCardString
+		return -1, ErrInvalidCardString(s)
 	}
 	switch runes[len(runes)-1] {
 	case 'c':
@@ -83,7 +87,7 @@ func rankFromString(s string) (int, error) {
 	s = strings.ToLower(s)
 	runes := []rune(s)
 	if len(runes) > 3 || len(runes) < 2 {
-		return 0, ErrInvalidCardString
+		return 0, ErrInvalidCardString(s)
 	}
 	if len(runes) == 3 {
 		if runes[0] == '1' && runes[1] == '0' {

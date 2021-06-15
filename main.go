@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/cszczepaniak/cribbage-scorer/cards"
@@ -11,17 +12,21 @@ import (
 )
 
 var (
-	cutStr = flag.String("cut", "", "the cut card")
-	isCrib = flag.Bool("iscrib", false, "whether or not this is a crib")
+	cutStr  = flag.String("cut", "", "the cut card")
+	handStr = flag.String("hand", "", "a comma-separated list of card string representing the hand (e.g. ah,as,ad,ac)")
+	isCrib  = flag.Bool("iscrib", false, "whether or not this is a crib")
 )
 
 func main() {
 	start := time.Now()
 	hand := make([]cards.Card, 0, 4)
 	flag.Parse()
-	args := flag.Args()
-	for _, a := range args {
-		c, err := cards.NewCardFromString(a)
+	parts := strings.Split(*handStr, `,`)
+	if len(parts) != 4 {
+		log.Fatalf(`Must have 4 cards, got %s`, *handStr)
+	}
+	for _, a := range parts {
+		c, err := cards.NewCardFromString(strings.TrimSpace(a))
 		if err != nil {
 			log.Fatal(err)
 		}
