@@ -98,7 +98,8 @@ func TestScoreHand(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score, err := ScoreHand(hand, cut, tc.isCrib)
+		scorer := &Scorer{}
+		score, err := scorer.ScoreHand(hand, cut, tc.isCrib)
 		if tc.expErr != nil {
 			assert.EqualError(t, err, tc.expErr.Error())
 		} else {
@@ -138,7 +139,8 @@ func TestScoreFifteens(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score := scoreFifteens(hand, cut)
+		scorer := &Scorer{}
+		score := scorer.scoreFifteens(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -182,7 +184,8 @@ func TestScorePairs(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score := scorePairs(hand, cut)
+		scorer := &Scorer{}
+		score := scorer.scorePairs(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -233,7 +236,8 @@ func TestScoreFlush(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score := scoreFlush(hand, cut, tc.isCrib)
+		scorer := &Scorer{}
+		score := scorer.scoreFlush(hand, cut, tc.isCrib)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -277,7 +281,8 @@ func TestScoreRuns(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score := scoreRuns(hand, cut)
+		scorer := &Scorer{}
+		score := scorer.scoreRuns(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -306,7 +311,8 @@ func TestScoreNobs(t *testing.T) {
 	for _, tc := range tests {
 		hand, cut, err := testutils.MakeHandAndCut(tc.hand, tc.cut)
 		require.NoError(t, err)
-		score := scoreNobs(hand, cut)
+		scorer := &Scorer{}
+		score := scorer.scoreNobs(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }

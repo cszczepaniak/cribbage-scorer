@@ -36,7 +36,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	s, err := score.ScoreHand(hand, cut, *isCrib)
+	scorer := &score.Scorer{}
+	s, err := scorer.ScoreHand(hand, cut, *isCrib)
 	if err != nil {
 		log.Fatal(err)
 	}

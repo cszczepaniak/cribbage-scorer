@@ -11,22 +11,26 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
-func ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
-	err := validateHand(hand)
+type Scorer struct {
+	score int64
+}
+
+func (s *Scorer) ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	err := s.validateHand(hand)
 	if err != nil {
 		return 0, err
 	}
-	return (scoreFifteens(hand, cut) + scorePairs(hand, cut) + scoreFlush(hand, cut, isCrib) +
-		scoreRuns(hand, cut) + scoreNobs(hand, cut)), nil
+	return (s.scoreFifteens(hand, cut) + s.scorePairs(hand, cut) + s.scoreFlush(hand, cut, isCrib) +
+		s.scoreRuns(hand, cut) + s.scoreNobs(hand, cut)), nil
 }
 
-func scoreRuns(hand []cards.Card, cut cards.Card) int {
+func (s *Scorer) scoreRuns(hand []cards.Card, cut cards.Card) int {
 	all := append(hand, cut)
 	for i := 5; i > 2; i-- {
 		score := 0
 		combs := comb.Combinations(all, i)
 		for _, comb := range combs {
-			score += scoreRun(comb)
+			score += s.scoreRun(comb)
 		}
 		if score > 0 {
 			return score
@@ -35,7 +39,7 @@ func scoreRuns(hand []cards.Card, cut cards.Card) int {
 	return 0
 }
 
-func scoreRun(set []cards.Card) int {
+func (s *Scorer) scoreRun(set []cards.Card) int {
 	sorted := cards.SortByRankAscending(set)
 	for i := 0; i < len(sorted)-1; i++ {
 		thisCard := sorted[i]
@@ -47,7 +51,7 @@ func scoreRun(set []cards.Card) int {
 	return len(set)
 }
 
-func scoreNobs(hand []cards.Card, cut cards.Card) int {
+func (s *Scorer) scoreNobs(hand []cards.Card, cut cards.Card) int {
 	if cut.Rank == 11 {
 		return 0
 	}
@@ -59,14 +63,14 @@ func scoreNobs(hand []cards.Card, cut cards.Card) int {
 	return 0
 }
 
-func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) int {
+func (s *Scorer) scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) int {
 	if isCrib {
-		return scoreCribFlush(hand, cut)
+		return s.scoreCribFlush(hand, cut)
 	}
-	return scoreHandFlush(hand, cut)
+	return s.scoreHandFlush(hand, cut)
 }
 
-func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
+func (s *Scorer) scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
 	suitMap[hand[0].Suit] = struct{}{}
 	for _, c := range hand[1:] {
@@ -80,7 +84,7 @@ func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 	return 5
 }
 
-func scoreHandFlush(hand []cards.Card, cut cards.Card) int {
+func (s *Scorer) scoreHandFlush(hand []cards.Card, cut cards.Card) int {
 	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
 	suitMap[hand[0].Suit] = struct{}{}
 	for _, c := range hand[1:] {
@@ -95,8 +99,8 @@ func scoreHandFlush(hand []cards.Card, cut cards.Card) int {
 	return score
 }
 
-func scorePairs(hand []cards.Card, cut cards.Card) int {
-	err := validateHand(hand)
+func (s *Scorer) scorePairs(hand []cards.Card, cut cards.Card) int {
+	err := s.validateHand(hand)
 	if err != nil {
 		return 0
 	}
@@ -111,8 +115,8 @@ func scorePairs(hand []cards.Card, cut cards.Card) int {
 	return score
 }
 
-func scoreFifteens(hand []cards.Card, cut cards.Card) int {
-	err := validateHand(hand)
+func (s *Scorer) scoreFifteens(hand []cards.Card, cut cards.Card) int {
+	err := s.validateHand(hand)
 	if err != nil {
 		return 0
 	}
@@ -133,7 +137,7 @@ func scoreFifteens(hand []cards.Card, cut cards.Card) int {
 	return score
 }
 
-func validateHand(hand []cards.Card) error {
+func (s *Scorer) validateHand(hand []cards.Card) error {
 	if len(hand) != 4 {
 		return ErrInvalidHandSize
 	}
