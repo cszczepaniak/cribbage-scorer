@@ -2,6 +2,7 @@ package score
 
 import (
 	"errors"
+	"time"
 
 	"github.com/cszczepaniak/cribbage-scorer/cards"
 	"github.com/cszczepaniak/cribbage-scorer/comb"
@@ -12,16 +13,63 @@ var (
 )
 
 type Scorer struct {
-	score int64
+	isSerial bool
+}
+
+func NewSerialScorer() *Scorer {
+	return &Scorer{
+		isSerial: true,
+	}
+}
+
+func NewParallelScorer() *Scorer {
+	return &Scorer{
+		isSerial: false,
+	}
 }
 
 func (s *Scorer) ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
-	err := s.validateHand(hand)
-	if err != nil {
+	if err := s.validateHand(hand); err != nil {
 		return 0, err
 	}
-	return (s.scoreFifteens(hand, cut) + s.scorePairs(hand, cut) + s.scoreFlush(hand, cut, isCrib) +
-		s.scoreRuns(hand, cut) + s.scoreNobs(hand, cut)), nil
+	if s.isSerial {
+		return s.scoreHandSerial(hand, cut, isCrib), nil
+	}
+	return s.scoreHandParallel(hand, cut, isCrib)
+}
+
+func (s *Scorer) scoreHandSerial(hand []cards.Card, cut cards.Card, isCrib bool) int {
+	return int(s.scoreFifteens(hand, cut) + s.scorePairs(hand, cut) + s.scoreFlush(hand, cut, isCrib) +
+		s.scoreRuns(hand, cut) + s.scoreNobs(hand, cut))
+}
+
+func (s *Scorer) scoreHandParallel(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	scores := make(chan int)
+	go func() {
+		scores <- s.scoreFifteens(hand, cut)
+	}()
+	go func() {
+		scores <- s.scorePairs(hand, cut)
+	}()
+	go func() {
+		scores <- s.scoreFlush(hand, cut, isCrib)
+	}()
+	go func() {
+		scores <- s.scoreRuns(hand, cut)
+	}()
+	go func() {
+		scores <- s.scoreNobs(hand, cut)
+	}()
+	total := 0
+	for i := 0; i < 5; i++ {
+		select {
+		case s := <-scores:
+			total += s
+		case <-time.After(time.Second):
+			return 0, errors.New(`parallel scoring timed out`)
+		}
+	}
+	return total, nil
 }
 
 func (s *Scorer) scoreRuns(hand []cards.Card, cut cards.Card) int {
@@ -64,13 +112,6 @@ func (s *Scorer) scoreNobs(hand []cards.Card, cut cards.Card) int {
 }
 
 func (s *Scorer) scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) int {
-	if isCrib {
-		return s.scoreCribFlush(hand, cut)
-	}
-	return s.scoreHandFlush(hand, cut)
-}
-
-func (s *Scorer) scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
 	suitMap[hand[0].Suit] = struct{}{}
 	for _, c := range hand[1:] {
@@ -79,62 +120,73 @@ func (s *Scorer) scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 		}
 	}
 	if _, ok := suitMap[cut.Suit]; !ok {
-		return 0
+		if isCrib {
+			return 0
+		}
+		return 4
 	}
 	return 5
 }
 
-func (s *Scorer) scoreHandFlush(hand []cards.Card, cut cards.Card) int {
-	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
-	suitMap[hand[0].Suit] = struct{}{}
-	for _, c := range hand[1:] {
-		if _, ok := suitMap[c.Suit]; !ok {
-			return 0
-		}
-	}
-	score := 4
-	if _, ok := suitMap[cut.Suit]; ok {
-		score++
-	}
-	return score
-}
-
 func (s *Scorer) scorePairs(hand []cards.Card, cut cards.Card) int {
-	err := s.validateHand(hand)
-	if err != nil {
-		return 0
-	}
 	all := append(hand, cut)
-	combs := comb.Combinations(all, 2)
+	m := make(map[int]int, len(all))
+	for _, c := range all {
+		m[c.Rank]++
+	}
 	score := 0
-	for _, comb := range combs {
-		if comb[0].Rank == comb[1].Rank {
+	for _, val := range m {
+		switch val {
+		case 2:
 			score += 2
+		case 3:
+			score += 6
+		case 4:
+			score += 12
 		}
 	}
 	return score
 }
 
 func (s *Scorer) scoreFifteens(hand []cards.Card, cut cards.Card) int {
-	err := s.validateHand(hand)
-	if err != nil {
+	all := append(hand, cut)
+	vals := make([]int, len(all))
+	for i, c := range all {
+		vals[i] = c.Value()
+	}
+	nFifteens := fifteens(0, vals...)
+	return nFifteens * 2
+}
+
+func fifteens(sum int, hand ...int) int {
+	if sum == 15 {
+		return 1
+	}
+	if sum > 15 {
 		return 0
 	}
-	all := append(hand, cut)
-	score := 0
-	for i := 2; i < 6; i++ {
-		combs := comb.Combinations(all, i)
-		for _, comb := range combs {
-			val := 0
-			for _, c := range comb {
-				val += c.Value()
-			}
-			if val == 15 {
-				score += 2
-			}
-		}
+
+	switch len(hand) {
+	case 1:
+		return fifteens(sum + hand[0])
+	case 2:
+		return fifteens(sum+hand[0]) + fifteens(sum+hand[1]) + fifteens(sum+hand[0]+hand[1])
+	case 3:
+		return fifteens(sum+hand[0], hand[1], hand[2]) + fifteens(sum+hand[1], hand[2]) + fifteens(sum+hand[2])
+	case 4:
+		return fifteens(sum+hand[0], hand[1], hand[2], hand[3]) +
+			fifteens(sum+hand[1], hand[2], hand[3]) +
+			fifteens(sum+hand[2], hand[3]) +
+			fifteens(sum+hand[3])
+	case 5:
+		return fifteens(sum+hand[0], hand[1], hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[1], hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[3], hand[4]) +
+			fifteens(sum+hand[4])
+	default:
+		return 0
 	}
-	return score
 }
 
 func (s *Scorer) validateHand(hand []cards.Card) error {
