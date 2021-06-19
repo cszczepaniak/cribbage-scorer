@@ -2,49 +2,160 @@ package score
 
 import (
 	"errors"
+	"time"
 
 	"github.com/cszczepaniak/cribbage-scorer/cards"
-	"github.com/cszczepaniak/cribbage-scorer/comb"
 )
 
 var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
-func ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
-	err := validateHand(hand)
-	if err != nil {
+type Scorer struct {
+	isSerial bool
+}
+
+func NewSerialScorer() *Scorer {
+	return &Scorer{
+		isSerial: true,
+	}
+}
+
+func NewParallelScorer() *Scorer {
+	return &Scorer{
+		isSerial: false,
+	}
+}
+
+func (s *Scorer) ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	if err := s.validateHand(hand); err != nil {
 		return 0, err
 	}
-	return (scoreFifteens(hand, cut) + scorePairs(hand, cut) + scoreFlush(hand, cut, isCrib) +
-		scoreRuns(hand, cut) + scoreNobs(hand, cut)), nil
+	if s.isSerial {
+		return scoreHandSerial(hand, cut, isCrib), nil
+	}
+	return scoreHandParallel(hand, cut, isCrib)
+}
+
+func scoreHandSerial(hand []cards.Card, cut cards.Card, isCrib bool) int {
+	allCards := append(hand, cut)
+	rankCounts := make(map[int]int, len(allCards))
+	suits := make(map[cards.Suit]int, 4)
+	values := make([]int, len(allCards))
+	score := 0
+	for i, c := range allCards {
+		rankCounts[c.Rank]++
+		suits[c.Suit]++
+		values[i] = c.Value()
+	}
+	rs := &runScorer{}
+	for _, c := range allCards {
+		rs.scoreRunsIter(c, rankCounts)
+		// score nobs while we're looping
+		if c != cut && c.Rank == 11 && c.Suit == cut.Suit {
+			score += 1
+		}
+	}
+	score += rs.maxRunScore
+	// flush
+	if len(suits) == 1 {
+		score += 5
+	}
+	if len(suits) == 2 && suits[cut.Suit] == 1 && !isCrib {
+		score += 4
+	}
+	// fifteens
+	score += scoreFifteensFromValueList(values)
+	// pairs
+	score += scorePairsFromMap(rankCounts)
+
+	return score
+}
+
+func scoreHandParallel(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
+	scores := make(chan int)
+	go func() {
+		scores <- scoreFifteens(hand, cut)
+	}()
+	go func() {
+		scores <- scorePairs(hand, cut)
+	}()
+	go func() {
+		scores <- scoreFlush(hand, cut, isCrib)
+	}()
+	go func() {
+		scores <- scoreRuns(hand, cut)
+	}()
+	go func() {
+		scores <- scoreNobs(hand, cut)
+	}()
+	total := 0
+	for i := 0; i < 5; i++ {
+		select {
+		case s := <-scores:
+			total += s
+		case <-time.After(time.Second):
+			return 0, errors.New(`parallel scoring timed out`)
+		}
+	}
+	return total, nil
 }
 
 func scoreRuns(hand []cards.Card, cut cards.Card) int {
 	all := append(hand, cut)
-	for i := 5; i > 2; i-- {
-		score := 0
-		combs := comb.Combinations(all, i)
-		for _, comb := range combs {
-			score += scoreRun(comb)
-		}
-		if score > 0 {
-			return score
-		}
+	rankCounts := make(map[int]int, len(all))
+	for _, c := range all {
+		rankCounts[c.Rank]++
 	}
-	return 0
+	mostPoints := 0
+	var mult int
+	for _, c := range all {
+		if _, ok := rankCounts[c.Rank-1]; ok {
+			// this is already part of a run; skip calculation
+			continue
+		}
+		runLen := 1
+		// we're at the potential beginning of a run
+		nextUp := c.Rank + 1
+		mult = rankCounts[c.Rank]
+		for ct, ok := rankCounts[nextUp]; ok; ct, ok = rankCounts[nextUp] {
+			mult *= ct
+			runLen++
+			nextUp++
+		}
+		if runLen >= 3 && runLen*mult > mostPoints {
+			mostPoints = runLen * mult
+		}
+		mult = 1
+		runLen = 1
+	}
+	return mostPoints
 }
 
-func scoreRun(set []cards.Card) int {
-	sorted := cards.SortByRankAscending(set)
-	for i := 0; i < len(sorted)-1; i++ {
-		thisCard := sorted[i]
-		nextCard := sorted[i+1]
-		if thisCard.Rank+1 != nextCard.Rank {
-			return 0
-		}
+type runScorer struct {
+	currRunLen  int
+	currRunMult int
+	maxRunScore int
+}
+
+func (rs *runScorer) scoreRunsIter(curr cards.Card, rankCounts map[int]int) {
+	if _, ok := rankCounts[curr.Rank-1]; ok {
+		// this is already part of a previously calculated run; skip calculation
+		return
 	}
-	return len(set)
+	rs.currRunLen = 1
+	rs.currRunMult = 1
+	// we're at the potential beginning of a run
+	nextUp := curr.Rank + 1
+	rs.currRunMult = rankCounts[curr.Rank]
+	for ct, ok := rankCounts[nextUp]; ok; ct, ok = rankCounts[nextUp] {
+		rs.currRunMult *= ct
+		rs.currRunLen++
+		nextUp++
+	}
+	if rs.currRunLen >= 3 && rs.currRunLen*rs.currRunMult > rs.maxRunScore {
+		rs.maxRunScore = rs.currRunLen * rs.currRunMult
+	}
 }
 
 func scoreNobs(hand []cards.Card, cut cards.Card) int {
@@ -60,13 +171,6 @@ func scoreNobs(hand []cards.Card, cut cards.Card) int {
 }
 
 func scoreFlush(hand []cards.Card, cut cards.Card, isCrib bool) int {
-	if isCrib {
-		return scoreCribFlush(hand, cut)
-	}
-	return scoreHandFlush(hand, cut)
-}
-
-func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
 	suitMap[hand[0].Suit] = struct{}{}
 	for _, c := range hand[1:] {
@@ -75,65 +179,83 @@ func scoreCribFlush(hand []cards.Card, cut cards.Card) int {
 		}
 	}
 	if _, ok := suitMap[cut.Suit]; !ok {
-		return 0
+		if isCrib {
+			return 0
+		}
+		return 4
 	}
 	return 5
 }
 
-func scoreHandFlush(hand []cards.Card, cut cards.Card) int {
-	suitMap := make(map[cards.Suit]struct{}, len(hand)+1)
-	suitMap[hand[0].Suit] = struct{}{}
-	for _, c := range hand[1:] {
-		if _, ok := suitMap[c.Suit]; !ok {
-			return 0
-		}
+func scorePairs(hand []cards.Card, cut cards.Card) int {
+	allCards := append(hand, cut)
+	rankCounts := make(map[int]int, len(allCards))
+	for _, c := range allCards {
+		rankCounts[c.Rank]++
 	}
-	score := 4
-	if _, ok := suitMap[cut.Suit]; ok {
-		score++
-	}
-	return score
+	return scorePairsFromMap(rankCounts)
 }
 
-func scorePairs(hand []cards.Card, cut cards.Card) int {
-	err := validateHand(hand)
-	if err != nil {
-		return 0
-	}
-	all := append(hand, cut)
-	combs := comb.Combinations(all, 2)
+func scorePairsFromMap(rankCounts map[int]int) int {
 	score := 0
-	for _, comb := range combs {
-		if comb[0].Rank == comb[1].Rank {
+	for _, val := range rankCounts {
+		switch val {
+		case 2:
 			score += 2
+		case 3:
+			score += 6
+		case 4:
+			score += 12
 		}
 	}
 	return score
 }
 
 func scoreFifteens(hand []cards.Card, cut cards.Card) int {
-	err := validateHand(hand)
-	if err != nil {
-		return 0
+	allCards := append(hand, cut)
+	values := make([]int, len(allCards))
+	for i, c := range allCards {
+		values[i] = c.Value()
 	}
-	all := append(hand, cut)
-	score := 0
-	for i := 2; i < 6; i++ {
-		combs := comb.Combinations(all, i)
-		for _, comb := range combs {
-			val := 0
-			for _, c := range comb {
-				val += c.Value()
-			}
-			if val == 15 {
-				score += 2
-			}
-		}
-	}
-	return score
+	return scoreFifteensFromValueList(values)
 }
 
-func validateHand(hand []cards.Card) error {
+func scoreFifteensFromValueList(values []int) int {
+	return fifteens(0, values...) * 2
+}
+
+func fifteens(sum int, hand ...int) int {
+	if sum == 15 {
+		return 1
+	}
+	if sum > 15 {
+		return 0
+	}
+
+	switch len(hand) {
+	case 1:
+		return fifteens(sum + hand[0])
+	case 2:
+		return fifteens(sum+hand[0]) + fifteens(sum+hand[1]) + fifteens(sum+hand[0]+hand[1])
+	case 3:
+		return fifteens(sum+hand[0], hand[1], hand[2]) + fifteens(sum+hand[1], hand[2]) + fifteens(sum+hand[2])
+	case 4:
+		return fifteens(sum+hand[0], hand[1], hand[2], hand[3]) +
+			fifteens(sum+hand[1], hand[2], hand[3]) +
+			fifteens(sum+hand[2], hand[3]) +
+			fifteens(sum+hand[3])
+	case 5:
+		return fifteens(sum+hand[0], hand[1], hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[1], hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[2], hand[3], hand[4]) +
+			fifteens(sum+hand[3], hand[4]) +
+			fifteens(sum+hand[4])
+	default:
+		return 0
+	}
+}
+
+func (s *Scorer) validateHand(hand []cards.Card) error {
 	if len(hand) != 4 {
 		return ErrInvalidHandSize
 	}
