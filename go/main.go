@@ -36,7 +36,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	scorer := &score.Scorer{}
+	scorer := score.NewSerialScorer()
 	s, err := scorer.ScoreHand(hand, cut, *isCrib)
 	if err != nil {
 		log.Fatal(err)
