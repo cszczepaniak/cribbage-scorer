@@ -170,8 +170,7 @@ func TestScoreFifteens(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		scorer := NewSerialScorer()
-		score := scorer.scoreFifteens(hand, cut)
+		score := scoreFifteens(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -214,8 +213,7 @@ func TestScorePairs(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		scorer := NewSerialScorer()
-		score := scorer.scorePairs(hand, cut)
+		score := scorePairs(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -265,8 +263,7 @@ func TestScoreFlush(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		scorer := NewSerialScorer()
-		score := scorer.scoreFlush(hand, cut, tc.isCrib)
+		score := scoreFlush(hand, cut, tc.isCrib)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -309,8 +306,7 @@ func TestScoreRuns(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		scorer := NewSerialScorer()
-		score := scorer.scoreRuns(hand, cut)
+		score := scoreRuns(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -338,9 +334,7 @@ func TestScoreNobs(t *testing.T) {
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-
-		serialScorer := NewSerialScorer()
-		score := serialScorer.scoreNobs(hand, cut)
+		score := scoreNobs(hand, cut)
 		assert.Equal(t, tc.expScore, score)
 
 	}
