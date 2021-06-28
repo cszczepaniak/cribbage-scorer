@@ -34,7 +34,7 @@ func TestCombinations(t *testing.T) {
 	for _, tc := range tests {
 		cds := make([]cards.Card, len(tc.superset))
 		for i, s := range tc.superset {
-			c, err := cards.NewCardFromString(s)
+			c, err := cards.FromString(s)
 			require.NoError(t, err)
 			cds[i] = c
 		}

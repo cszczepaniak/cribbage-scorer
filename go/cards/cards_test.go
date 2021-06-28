@@ -10,7 +10,7 @@ import (
 func makeHandFromStrings(strs []string) ([]Card, error) {
 	hand := make([]Card, len(strs))
 	for i, s := range strs {
-		c, err := NewCardFromString(s)
+		c, err := FromString(s)
 		if err != nil {
 			return nil, err
 		}
@@ -109,7 +109,7 @@ func TestNewCardFromString(t *testing.T) {
 		expError: ErrInvalidCardString(`a`),
 	}}
 	for _, tc := range tests {
-		c, err := NewCardFromString(tc.str)
+		c, err := FromString(tc.str)
 		if tc.expError != nil {
 			assert.EqualError(t, err, tc.expError.Error())
 		} else {
