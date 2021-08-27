@@ -1,2 +1,2 @@
 #!/bin/bash
-go build -o impl-go.exe
+go build -o $1.exe

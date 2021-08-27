@@ -7,7 +7,7 @@ function build {
 }
 
 function bench {
-    hyperfine $1 --export-json "$1.json"
+    hyperfine "$1.exe" --export-json "bench-$2.json"
 }
 
 function run_all {
@@ -15,7 +15,7 @@ function run_all {
     do
         pushd $FILE
         build $FILE
-        bench $FILE
+        bench $FILE "$ROOT_DIR/$FILE"
         popd
     done
 }
