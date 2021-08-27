@@ -1,26 +1,30 @@
 package main
 
 import (
-	"flag"
-	"fmt"
+	"encoding/json"
+	"io/fs"
+	"io/ioutil"
 	"log"
 	"runtime"
-	"strings"
-	"time"
 
 	"github.com/cszczepaniak/cribbage-scorer/cards"
 	"github.com/cszczepaniak/cribbage-scorer/comb"
 	"github.com/cszczepaniak/cribbage-scorer/score"
 )
 
-var (
-	cutStr  = flag.String("cut", "", "the cut card")
-	handStr = flag.String("hand", "", "a comma-separated list of card string representing the hand (e.g. ah,as,ad,ac)")
-	isCrib  = flag.Bool("iscrib", false, "whether or not this is a crib")
-)
-
 func main() {
-	start := time.Now()
+	scores, err := scoreAll()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = writeResult(scores)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func scoreAll() (map[int]int, error) {
 	deck := make([]cards.Card, 52)
 	for i := 0; i < 52; i++ {
 		c, err := cards.FromIndex(i)
@@ -42,7 +46,6 @@ func main() {
 		if end > len(all) {
 			end = len(all)
 		}
-		fmt.Println(len(all[i:end]))
 		go func(hands [][]cards.Card) {
 			defer func() {
 				doneChan <- 1
@@ -70,35 +73,17 @@ func main() {
 		case s := <-scoreChan:
 			scores[s]++
 		case err := <-errChan:
-			log.Fatal(err)
+			return nil, err
 		}
 	}
-	fmt.Println(scores)
-	fmt.Printf("time elapsed: %s", time.Since(start))
+	return scores, nil
+}
 
-	return
-	start = time.Now()
-	hand := make([]cards.Card, 0, 4)
-	flag.Parse()
-	parts := strings.Split(*handStr, `,`)
-	if len(parts) != 4 {
-		log.Fatalf(`Must have 4 cards, got %s`, *handStr)
-	}
-	for _, a := range parts {
-		c, err := cards.FromString(strings.TrimSpace(a))
-		if err != nil {
-			log.Fatal(err)
-		}
-		hand = append(hand, c)
-	}
-	cut, err := cards.FromString(*cutStr)
+func writeResult(scores map[int]int) error {
+	bs, err := json.Marshal(scores)
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	scorer1 := score.NewSerialScorer()
-	s, err := scorer1.ScoreHand(hand, cut, *isCrib)
-	if err != nil {
-		log.Fatal(err)
-	}
-	fmt.Printf("Score is: %d\n", s)
+
+	return ioutil.WriteFile(`result.json`, bs, fs.ModePerm)
 }
