@@ -142,9 +142,6 @@ func (c Card) String() string {
 		return c.Name
 	}
 	n := ``
-	// if c.Rank >= 2 && c.Rank <= 10 {
-	// 	n += strconv.Itoa(c.Rank)
-	// }
 	switch c.Rank {
 	case 1:
 		n += `a`
