@@ -232,27 +232,11 @@ func fifteens(sum int, hand ...int) int {
 		return 0
 	}
 
-	switch len(hand) {
-	case 1:
-		return fifteens(sum + hand[0])
-	case 2:
-		return fifteens(sum+hand[0]) + fifteens(sum+hand[1]) + fifteens(sum+hand[0]+hand[1])
-	case 3:
-		return fifteens(sum+hand[0], hand[1], hand[2]) + fifteens(sum+hand[1], hand[2]) + fifteens(sum+hand[2])
-	case 4:
-		return fifteens(sum+hand[0], hand[1], hand[2], hand[3]) +
-			fifteens(sum+hand[1], hand[2], hand[3]) +
-			fifteens(sum+hand[2], hand[3]) +
-			fifteens(sum+hand[3])
-	case 5:
-		return fifteens(sum+hand[0], hand[1], hand[2], hand[3], hand[4]) +
-			fifteens(sum+hand[1], hand[2], hand[3], hand[4]) +
-			fifteens(sum+hand[2], hand[3], hand[4]) +
-			fifteens(sum+hand[3], hand[4]) +
-			fifteens(sum+hand[4])
-	default:
-		return 0
+	var res int
+	for i, c := range hand {
+		res += fifteens(sum+c, hand[i+1:]...)
 	}
+	return res
 }
 
 func (s *Scorer) validateHand(hand []cards.Card) error {

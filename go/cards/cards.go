@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 )
 
@@ -18,11 +19,25 @@ func ErrInvalidCardString(got string) error {
 
 type Suit int
 
+func (s Suit) String() string {
+	switch s {
+	case Clubs:
+		return `c`
+	case Diamonds:
+		return `d`
+	case Hearts:
+		return `h`
+	case Spades:
+		return `s`
+	}
+	return `wtf`
+}
+
 const (
-	Clubs Suit = iota
-	Diamonds
-	Hearts
-	Spades
+	Clubs    Suit = 0
+	Diamonds Suit = 1
+	Hearts   Suit = 2
+	Spades   Suit = 3
 )
 
 type Card struct {
@@ -31,7 +46,17 @@ type Card struct {
 	Name string `json:"name"`
 }
 
-func NewCardFromString(s string) (Card, error) {
+func FromIndex(idx int) (Card, error) {
+	if idx < 0 || idx > 51 {
+		return Card{}, errors.New(`index must be between 0 and 51 inclusive`)
+	}
+	return Card{
+		Suit: Suit(idx % 4),
+		Rank: (idx / 4) + 1,
+	}, nil
+}
+
+func FromString(s string) (Card, error) {
 	rank, err := rankFromString(s)
 	if err != nil {
 		return Card{}, err
@@ -113,5 +138,21 @@ func rankFromString(s string) (int, error) {
 }
 
 func (c Card) String() string {
-	return c.Name
+	if c.Name != `` {
+		return c.Name
+	}
+	n := ``
+	switch c.Rank {
+	case 1:
+		n += `a`
+	case 11:
+		n += `j`
+	case 12:
+		n += `q`
+	case 13:
+		n += `k`
+	default:
+		n += strconv.Itoa(c.Rank)
+	}
+	return n + c.Suit.String()
 }
