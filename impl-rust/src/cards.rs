@@ -34,8 +34,16 @@ impl From<Suit> for usize {
     }
 }
 
-pub fn new_deck() -> Vec<Card> {
-    (0..52).map(|i| Card::from_index(i)).collect()
+pub fn new_deck() -> [Card; 52] {
+    let mut cards = [Card {
+        suit: Suit::Unknown,
+        value: 0,
+        rank: 0,
+    }; 52];
+    for i in 0..52 {
+        cards[i] = Card::from_index(i);
+    }
+    cards
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -54,7 +62,7 @@ impl Card {
         Card {
             value,
             suit: (i / 13).into(),
-            rank: i % 13,
+            rank: (i % 13) + 1,
         }
     }
     pub fn from_str(s: &str) -> Result<Card, Box<dyn Error>> {

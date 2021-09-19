@@ -1,13 +1,13 @@
 use crate::cards::Card;
 use itertools::Itertools;
 
-pub fn score_hand(hand: &[Card; 4], cut: Card, is_crib: bool) -> usize {
+pub fn score_hand(hand: &[Card], cut: Card, is_crib: bool) -> usize {
     score_runs_and_pairs_and_nobs(hand, cut)
         + score_fifteens(hand, cut)
         + score_flush(hand, cut, is_crib)
 }
 
-fn score_fifteens(hand: &[Card; 4], cut: Card) -> usize {
+fn score_fifteens(hand: &[Card], cut: Card) -> usize {
     let all = [hand[0], hand[1], hand[2], hand[3], cut];
     if (all.iter().map(|c| c.value).reduce(|a, b| a | b).unwrap()) & 1 == 0 {
         // every card is even; no fifteens possible
@@ -35,7 +35,7 @@ fn score_fifteens(hand: &[Card; 4], cut: Card) -> usize {
         .sum()
 }
 
-fn score_flush(hand: &[Card; 4], cut: Card, is_crib: bool) -> usize {
+fn score_flush(hand: &[Card], cut: Card, is_crib: bool) -> usize {
     let first = hand[0].suit;
     for c in &hand[1..] {
         if c.suit != first {
@@ -49,10 +49,10 @@ fn score_flush(hand: &[Card; 4], cut: Card, is_crib: bool) -> usize {
     }
 }
 
-fn score_runs_and_pairs_and_nobs(hand: &[Card; 4], cut: Card) -> usize {
+fn score_runs_and_pairs_and_nobs(hand: &[Card], cut: Card) -> usize {
     let mut rank_counts = [0usize; 15];
     let mut ranks = [0usize; 5];
-    let all: [Card; 5] = [hand[0], hand[1], hand[2], hand[3], cut];
+    let all = [hand[0], hand[1], hand[2], hand[3], cut];
     for (i, c) in all.iter().enumerate() {
         rank_counts[c.rank] += 1;
         ranks[i] = c.rank
@@ -96,7 +96,7 @@ fn score_runs(all: &[usize; 5], rank_counts: &[usize; 15]) -> usize {
     0
 }
 
-fn score_nobs(hand: &[Card; 4], cut: Card, rank_counts: &[usize; 15]) -> usize {
+fn score_nobs(hand: &[Card], cut: Card, rank_counts: &[usize; 15]) -> usize {
     if cut.rank == 11 || rank_counts[11] == 0 {
         // cut is a jack or we don't have a jack; we can't have nobs
         return 0;
@@ -112,17 +112,14 @@ fn score_nobs(hand: &[Card; 4], cut: Card, rank_counts: &[usize; 15]) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::convert::TryInto;
 
-    fn make_hand(cut_str: &str, hand_str: &str) -> (Card, [Card; 4]) {
+    fn make_hand<'a>(cut_str: &str, hand_str: &'a str) -> (Card, Vec<Card>) {
         (
             Card::from_str(cut_str).expect("invalid card"),
             hand_str
                 .split(",")
                 .map(|s| Card::from_str(s).expect("invalid card"))
-                .collect::<Vec<_>>()
-                .try_into()
-                .expect("wrong size"),
+                .collect::<Vec<_>>(),
         )
     }
 
