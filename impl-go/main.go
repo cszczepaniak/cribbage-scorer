@@ -1,9 +1,7 @@
 package main
 
 import (
-	"encoding/json"
-	"io/fs"
-	"io/ioutil"
+	"fmt"
 	"log"
 	"runtime"
 
@@ -18,13 +16,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	err = writeResult(scores)
-	if err != nil {
-		log.Fatal(err)
+	for s, ct := range scores {
+		fmt.Printf("%02d: %d\n", s, ct)
 	}
 }
 
-func scoreAll() (map[int]int, error) {
+func scoreAll() ([30]int, error) {
 	deck := make([]cards.Card, 52)
 	for i := 0; i < 52; i++ {
 		c, err := cards.FromIndex(i)
@@ -65,7 +62,7 @@ func scoreAll() (map[int]int, error) {
 	}
 
 	done := 0
-	scores := make(map[int]int, 30)
+	var scores [30]int
 	for done < nWorkers {
 		select {
 		case d := <-doneChan:
@@ -73,17 +70,8 @@ func scoreAll() (map[int]int, error) {
 		case s := <-scoreChan:
 			scores[s]++
 		case err := <-errChan:
-			return nil, err
+			return [30]int{}, err
 		}
 	}
 	return scores, nil
-}
-
-func writeResult(scores map[int]int) error {
-	bs, err := json.Marshal(scores)
-	if err != nil {
-		return err
-	}
-
-	return ioutil.WriteFile(`result.json`, bs, fs.ModePerm)
 }
