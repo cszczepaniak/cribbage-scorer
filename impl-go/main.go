@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"runtime"
+	"sync"
+	"sync/atomic"
 
 	"github.com/cszczepaniak/cribbage-scorer/cards"
 	"github.com/cszczepaniak/cribbage-scorer/comb"
@@ -21,7 +24,7 @@ func main() {
 	}
 }
 
-func scoreAll() ([30]int, error) {
+func scoreAll() ([30]int32, error) {
 	deck := make([]cards.Card, 52)
 	for i := 0; i < 52; i++ {
 		c, err := cards.FromIndex(i)
@@ -34,8 +37,11 @@ func scoreAll() ([30]int, error) {
 
 	nWorkers := runtime.NumCPU()
 	chunkSize := (len(all) + nWorkers - 1) / nWorkers
-	scoreChan, doneChan, errChan := make(chan int), make(chan int), make(chan error)
 	scorer := score.NewSerialScorer()
+
+	var scores [30]int32
+	var wg sync.WaitGroup
+	wg.Add(nWorkers)
 
 	for i := 0; i < len(all); i += chunkSize {
 		end := i + chunkSize
@@ -45,33 +51,22 @@ func scoreAll() ([30]int, error) {
 		}
 		go func(hands [][]cards.Card) {
 			defer func() {
-				doneChan <- 1
+				wg.Done()
 			}()
 			for _, h := range hands {
 				for j, c := range h {
 					st := append([]cards.Card{}, h[:j]...)
 					s, err := scorer.ScoreHand(append(st, h[j+1:]...), c, false)
 					if err != nil {
-						errChan <- err
+						fmt.Fprintf(os.Stderr, "%v\n", err)
 						return
 					}
-					scoreChan <- s
+					atomic.AddInt32(&scores[s], 1)
 				}
 			}
 		}(all[i:end])
 	}
 
-	done := 0
-	var scores [30]int
-	for done < nWorkers {
-		select {
-		case d := <-doneChan:
-			done += d
-		case s := <-scoreChan:
-			scores[s]++
-		case err := <-errChan:
-			return [30]int{}, err
-		}
-	}
+	wg.Wait()
 	return scores, nil
 }

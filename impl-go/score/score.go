@@ -65,7 +65,14 @@ func scoreHandSerial(hand []cards.Card, cut cards.Card, isCrib bool) int {
 		score += 4
 	}
 	// fifteens
-	score += scoreFifteensFromValueList(values)
+	vs := [5]int{
+		hand[0].Value(),
+		hand[1].Value(),
+		hand[2].Value(),
+		hand[3].Value(),
+		cut.Value(),
+	}
+	score += scoreFifteensFromValueList(vs)
 	// pairs
 	score += scorePairsFromMap(rankCounts)
 
@@ -213,15 +220,28 @@ func scorePairsFromMap(rankCounts map[int]int) int {
 
 func scoreFifteens(hand []cards.Card, cut cards.Card) int {
 	allCards := append(hand, cut)
-	values := make([]int, len(allCards))
+	values := [5]int{
+		hand[0].Value(),
+		hand[1].Value(),
+		hand[2].Value(),
+		hand[3].Value(),
+		cut.Value(),
+	}
 	for i, c := range allCards {
 		values[i] = c.Value()
 	}
 	return scoreFifteensFromValueList(values)
 }
 
-func scoreFifteensFromValueList(values []int) int {
-	return fifteens(0, values...) * 2
+func scoreFifteensFromValueList(values [5]int) int {
+	if (values[0]|values[1]|values[2]|values[3]|values[4])&1 == 0 {
+		return 0
+	}
+	sum := values[0] + values[1] + values[2] + values[3] + values[4]
+	if sum < 15 || sum > 46 {
+		return 0
+	}
+	return fifteens(0, values[:]...) * 2
 }
 
 func fifteens(sum int, hand ...int) int {
