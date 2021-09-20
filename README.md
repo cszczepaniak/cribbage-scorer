@@ -21,7 +21,6 @@ impl-rust
 real	0m3.104s
 user	0m0.000s
 sys	0m0.000s
-
 ```
     
 </details>
