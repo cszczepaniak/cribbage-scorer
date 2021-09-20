@@ -1,2 +1,2 @@
 #!/bin/bash
-go build -o $1.exe
+go build -ldflags "-s -w" -o bin/$1
