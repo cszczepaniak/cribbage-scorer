@@ -6,20 +6,24 @@ My initial goal was to be able to score every cribbage hand. Now this is a good 
 ## Results
 <details>
   <summary>See the latest results</summary>
-    ```
-    impl-go
 
-    real	0m6.350s
-    user	0m0.000s
-    sys	0m0.000s
+```
+===========================================================================
+impl-go
 
+real	0m6.350s
+user	0m0.000s
+sys	0m0.000s
+
+===========================================================================
+impl-rust
+
+real	0m3.104s
+user	0m0.000s
+sys	0m0.000s
+
+```
     
-    impl-rust
-
-    real	0m3.104s
-    user	0m0.000s
-    sys	0m0.000s
-    ```
 </details>
 
 
