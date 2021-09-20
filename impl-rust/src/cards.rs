@@ -34,14 +34,10 @@ impl From<Suit> for usize {
     }
 }
 
-pub fn new_deck() -> [Card; 52] {
-    let mut cards = [Card {
-        suit: Suit::Unknown,
-        value: 0,
-        rank: 0,
-    }; 52];
+pub fn new_deck() -> Vec<Card> {
+    let mut cards = Vec::new();
     for i in 0..52 {
-        cards[i] = Card::from_index(i);
+        cards.push(Card::from_index(i))
     }
     cards
 }
