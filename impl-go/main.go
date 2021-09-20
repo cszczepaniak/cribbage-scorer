@@ -45,18 +45,17 @@ func scoreAll() ([30]int32, error) {
 
 	for i := 0; i < len(all); i += chunkSize {
 		end := i + chunkSize
-
 		if end > len(all) {
 			end = len(all)
 		}
+
 		go func(hands [][]cards.Card) {
 			defer func() {
 				wg.Done()
 			}()
 			for _, h := range hands {
 				for j, c := range h {
-					st := append([]cards.Card{}, h[:j]...)
-					s, err := scorer.ScoreHand(append(st, h[j+1:]...), c, false)
+					s, err := scorer.ScoreHand(append(h[:j], h[j+1:]...), c, false)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "%v\n", err)
 						return

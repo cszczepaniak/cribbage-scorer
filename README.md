@@ -11,14 +11,14 @@ My initial goal was to be able to score every cribbage hand. Now this is a good 
 ===========================================================================
 impl-go
 
-real	0m6.350s
+real	0m2.152s
 user	0m0.000s
-sys	0m0.000s
+sys	0m0.015s
 
 ===========================================================================
 impl-rust
 
-real	0m3.104s
+real	0m3.068s
 user	0m0.000s
 sys	0m0.000s
 ```
