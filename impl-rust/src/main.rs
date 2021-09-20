@@ -50,6 +50,6 @@ fn main() {
     })
     .unwrap();
     for (i, occ) in all_scores.iter().enumerate() {
-        println!("{}: {}", i, occ.load(Ordering::Relaxed));
+        println!("{:02}: {}", i, occ.load(Ordering::Relaxed));
     }
 }
