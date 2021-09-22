@@ -93,7 +93,8 @@ func scorePairs(rankCounts rankCounts) int {
 		case 3:
 			score += 6
 		case 4:
-			score += 12
+			// we know there's nothing else possible
+			return 12
 		}
 	}
 	return score
