@@ -118,3 +118,7 @@ func TestNewCardFromString(t *testing.T) {
 		assert.Equal(t, tc.exp, c)
 	}
 }
+
+func BenchmarkNewDeck(b *testing.B) {
+	_ = NewDeck()
+}

@@ -17,6 +17,17 @@ func ErrInvalidCardString(got string) error {
 	return fmt.Errorf(`invalid card string: %s`, got)
 }
 
+type Deck = [52]Card
+
+func NewDeck() Deck {
+	d := Deck{}
+	for i := 0; i < 52; i++ {
+		// we can safely ignore the error here since we know we'll be in bounds
+		d[i], _ = FromIndex(i)
+	}
+	return d
+}
+
 type Suit int
 
 func (s Suit) String() string {

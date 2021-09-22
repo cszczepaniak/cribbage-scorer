@@ -5,64 +5,9 @@ import (
 
 	"github.com/cszczepaniak/cribbage-scorer/testutils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
-var result int
-
-func BenchmarkSerialScorer(b *testing.B) {
-	hand, cut := testutils.MakeHandAndCut(b, []string{`5c`, `5d`, `5h`, `js`}, `5s`)
-	s := NewSerialScorer()
-	var score int
-	for i := 0; i < b.N; i++ {
-		var err error
-		score, err = s.ScoreHand(hand, cut, false)
-		require.NoError(b, err)
-	}
-	result = score
-}
-func BenchmarkParallelScorer(b *testing.B) {
-	hand, cut := testutils.MakeHandAndCut(b, []string{`5c`, `5d`, `5h`, `js`}, `5s`)
-	s := NewParallelScorer()
-	var score int
-	for i := 0; i < b.N; i++ {
-		var err error
-		score, err = s.ScoreHand(hand, cut, false)
-		require.NoError(b, err)
-	}
-	result = score
-}
-
-func TestScoreHandWithErrors(t *testing.T) {
-	tests := []struct {
-		desc     string
-		hand     []string
-		cut      string
-		expScore int
-		expErr   error
-	}{{
-		desc:     `too many cards`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`, `5h`},
-		cut:      `6h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
-	}, {
-		desc:     `too few cards`,
-		hand:     []string{`ah`, `2h`, `3h`},
-		cut:      `6h`,
-		expScore: 0,
-		expErr:   ErrInvalidHandSize,
-	}}
-	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		serial := NewSerialScorer()
-		score, err := serial.ScoreHand(hand, cut, false)
-		assert.Equal(t, tc.expScore, score)
-		assert.Equal(t, tc.expErr, err)
-	}
-}
-
-func TestScoreHand(t *testing.T) {
+func BenchmarkScoreHand(b *testing.B) {
 	tests := []struct {
 		desc     string
 		hand     []string
@@ -125,188 +70,133 @@ func TestScoreHand(t *testing.T) {
 		expScore: 1,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
+		tc := tc
+		hand, cut := testutils.MakeHandAndCut(b, tc.hand, tc.cut)
 
-		serialScorer := NewSerialScorer()
-		score, err := serialScorer.ScoreHand(hand, cut, tc.isCrib)
-		require.NoError(t, err, `serial`)
-
-		assert.Equal(t, tc.expScore, score, `serial: `+tc.desc)
-
-		parallelScorer := NewParallelScorer()
-		score, err = parallelScorer.ScoreHand(hand, cut, tc.isCrib)
-		require.NoError(t, err, `parallel`)
-
-		assert.Equal(t, tc.expScore, score, `parallel: `+tc.desc)
+		b.Run(tc.desc, func(b *testing.B) {
+			score := ScoreHand(hand, cut, tc.isCrib)
+			assert.Equal(b, tc.expScore, score)
+		})
 	}
 }
 
 func TestScoreFifteens(t *testing.T) {
 	tests := []struct {
 		desc     string
-		hand     []string
-		cut      string
+		values   [5]int
 		expScore int
 	}{{
 		desc:     `no fifteens`,
-		hand:     []string{`9d`, `4h`, `7s`, `9s`},
-		cut:      `jh`,
+		values:   [5]int{9, 4, 7, 9, 10},
 		expScore: 0,
 	}, {
 		desc:     `a hand`,
-		hand:     []string{`10s`, `5h`, `7s`, `9s`},
-		cut:      `jh`,
+		values:   [5]int{10, 5, 7, 9, 10},
 		expScore: 4,
 	}, {
 		desc:     `a hand`,
-		hand:     []string{`7h`, `4s`, `4d`, `4c`},
-		cut:      `4h`,
+		values:   [5]int{7, 4, 4, 4, 4},
 		expScore: 12,
 	}, {
 		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5h`,
+		values:   [5]int{1, 2, 3, 4, 5},
 		expScore: 2,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		score := scoreFifteens(hand, cut)
-		assert.Equal(t, tc.expScore, score)
+		tc := tc
+		t.Run(tc.desc, func(t *testing.T) {
+			assert.Equal(t, tc.expScore, scoreFifteens(tc.values))
+		})
 	}
 }
 func TestScorePairs(t *testing.T) {
 	tests := []struct {
-		desc     string
 		hand     []string
-		cut      string
 		expScore int
 	}{{
-		desc:     `a hand`,
-		hand:     []string{`6h`, `4s`, `4d`, `8c`},
-		cut:      `7s`,
+		hand:     []string{`6h`, `4s`, `4d`, `8c`, `7s`},
 		expScore: 2,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`6h`, `4s`, `4d`, `4c`},
-		cut:      `7s`,
+		hand:     []string{`6h`, `4s`, `4d`, `4c`, `7s`},
 		expScore: 6,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`7h`, `4s`, `4d`, `5c`},
-		cut:      `7s`,
+		hand:     []string{`7h`, `4s`, `4d`, `5c`, `7s`},
 		expScore: 4,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`7h`, `4s`, `4d`, `4c`},
-		cut:      `7s`,
+		hand:     []string{`7h`, `4s`, `4d`, `4c`, `7s`},
 		expScore: 8,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`7h`, `4s`, `4d`, `4c`},
-		cut:      `4h`,
+		hand:     []string{`7h`, `4s`, `4d`, `4c`, `4h`},
 		expScore: 12,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5h`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`, `5h`},
 		expScore: 0,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		score := scorePairs(hand, cut)
+		cards := testutils.ParseCards(t, tc.hand)
+		score := scorePairs(newRankCounts(cards))
 		assert.Equal(t, tc.expScore, score)
 	}
 }
 func TestScoreFlush(t *testing.T) {
 	tests := []struct {
-		desc     string
-		hand     []string
-		cut      string
-		isCrib   bool
-		expScore int
+		hand         []string
+		cut          string
+		expHandScore int
+		expCribScore int
 	}{{
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4s`},
-		cut:      `5h`,
-		isCrib:   false,
-		expScore: 0,
+		hand:         []string{`ah`, `2h`, `3h`, `4s`},
+		cut:          `5h`,
+		expHandScore: 0,
+		expCribScore: 0,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5s`,
-		isCrib:   false,
-		expScore: 4,
+		hand:         []string{`ah`, `2h`, `3h`, `4h`},
+		cut:          `5s`,
+		expHandScore: 4,
+		expCribScore: 0,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5h`,
-		isCrib:   false,
-		expScore: 5,
+		hand:         []string{`ah`, `2h`, `3h`, `4h`},
+		cut:          `5h`,
+		expHandScore: 5,
+		expCribScore: 5,
 	}, {
-		desc:     `a crib`,
-		hand:     []string{`ah`, `2h`, `3h`, `4s`},
-		cut:      `5h`,
-		isCrib:   true,
-		expScore: 0,
-	}, {
-		desc:     `a crib`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5s`,
-		isCrib:   true,
-		expScore: 0,
-	}, {
-		desc:     `a crib`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5h`,
-		isCrib:   true,
-		expScore: 5,
+		hand:         []string{`ah`, `2h`, `3h`, `4s`},
+		cut:          `5h`,
+		expHandScore: 0,
+		expCribScore: 0,
 	}}
 	for _, tc := range tests {
 		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		score := scoreFlush(hand, cut, tc.isCrib)
-		assert.Equal(t, tc.expScore, score)
+		assert.Equal(t, tc.expHandScore, scoreFlush(hand, cut, false))
+		assert.Equal(t, tc.expCribScore, scoreFlush(hand, cut, true))
 	}
 }
 func TestScoreRuns(t *testing.T) {
 	tests := []struct {
-		desc     string
 		hand     []string
-		cut      string
 		expScore int
 	}{{
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `5h`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`, `5h`},
 		expScore: 5,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `9h`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`, `9h`},
 		expScore: 4,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `8h`},
-		cut:      `9h`,
+		hand:     []string{`ah`, `2h`, `3h`, `8h`, `9h`},
 		expScore: 3,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `4h`},
-		cut:      `4s`,
+		hand:     []string{`ah`, `2h`, `3h`, `4h`, `4s`},
 		expScore: 8,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `3s`},
-		cut:      `10h`,
+		hand:     []string{`ah`, `2h`, `3h`, `3s`, `10h`},
 		expScore: 6,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`10c`, `jc`, `jh`, `qc`},
-		cut:      `ah`,
+		hand:     []string{`10c`, `jc`, `jh`, `qc`, `ah`},
 		expScore: 6,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		score := scoreRuns(hand, cut)
+		hand := testutils.ParseCards(t, tc.hand)
+		score := scoreRuns(hand, newRankCounts(hand))
 		assert.Equal(t, tc.expScore, score)
 	}
 }
@@ -317,25 +207,18 @@ func TestScoreNobs(t *testing.T) {
 		cut      string
 		expScore int
 	}{{
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `jh`},
-		cut:      `4h`,
+		hand:     []string{`ah`, `2h`, `3h`, `jh`, `4h`},
 		expScore: 1,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`ah`, `2h`, `3h`, `jh`},
-		cut:      `4c`,
+		hand:     []string{`ah`, `2h`, `3h`, `jh`, `4c`},
 		expScore: 0,
 	}, {
-		desc:     `a hand`,
-		hand:     []string{`jc`, `jd`, `jh`, `js`},
-		cut:      `4c`,
+		hand:     []string{`jc`, `jd`, `jh`, `js`, `4c`},
 		expScore: 1,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
-		score := scoreNobs(hand, cut)
+		hand := testutils.ParseCards(t, tc.hand)
+		score := scoreNobs(hand[0:4], hand[4], newRankCounts(hand))
 		assert.Equal(t, tc.expScore, score)
-
 	}
 }

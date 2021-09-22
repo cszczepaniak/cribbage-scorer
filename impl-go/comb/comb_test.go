@@ -42,3 +42,7 @@ func TestCombinations(t *testing.T) {
 		assert.Len(t, combs, tc.expLen)
 	}
 }
+
+func BenchmarkAllFiveCardIndices(b *testing.B) {
+	_ = AllFiveCardHandIndices()
+}
