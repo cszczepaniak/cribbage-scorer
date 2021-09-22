@@ -25,37 +25,37 @@ func main() {
 }
 
 func scoreAll() ([30]int32, error) {
-	deck := make([]cards.Card, 52)
-	for i := 0; i < 52; i++ {
-		c, err := cards.FromIndex(i)
-		if err != nil {
-			log.Fatal(err)
-		}
-		deck[i] = c
-	}
-	all := comb.Combinations(deck, 5)
+	deck := cards.NewDeck()
+	allIndices := comb.AllFiveCardHandIndices()
 
 	nWorkers := runtime.NumCPU()
-	chunkSize := (len(all) + nWorkers - 1) / nWorkers
-	scorer := score.NewSerialScorer()
+	chunkSize := (len(allIndices) + nWorkers - 1) / nWorkers
 
 	var scores [30]int32
 	var wg sync.WaitGroup
 	wg.Add(nWorkers)
 
-	for i := 0; i < len(all); i += chunkSize {
+	for i := 0; i < len(allIndices); i += chunkSize {
 		end := i + chunkSize
-		if end > len(all) {
-			end = len(all)
+		if end > len(allIndices) {
+			end = len(allIndices)
 		}
 
-		go func(hands [][]cards.Card) {
+		go func(indices [][5]uint8) {
 			defer func() {
 				wg.Done()
 			}()
-			for _, h := range hands {
-				for j, c := range h {
-					s, err := scorer.ScoreHand(append(h[:j], h[j+1:]...), c, false)
+			for _, idxs := range indices {
+				// for each set of 5, there are 5 hands we can build
+				hs := [5][5]cards.Card{
+					{deck[idxs[0]], deck[idxs[1]], deck[idxs[2]], deck[idxs[3]], deck[idxs[4]]},
+					{deck[idxs[4]], deck[idxs[0]], deck[idxs[1]], deck[idxs[2]], deck[idxs[3]]},
+					{deck[idxs[3]], deck[idxs[4]], deck[idxs[0]], deck[idxs[1]], deck[idxs[2]]},
+					{deck[idxs[2]], deck[idxs[3]], deck[idxs[4]], deck[idxs[0]], deck[idxs[1]]},
+					{deck[idxs[1]], deck[idxs[2]], deck[idxs[3]], deck[idxs[4]], deck[idxs[0]]},
+				}
+				for _, h := range hs {
+					s, err := score.ScoreHand(h[0:4], h[4], false)
 					if err != nil {
 						fmt.Fprintf(os.Stderr, "%v\n", err)
 						return
@@ -63,7 +63,7 @@ func scoreAll() ([30]int32, error) {
 					atomic.AddInt32(&scores[s], 1)
 				}
 			}
-		}(all[i:end])
+		}(allIndices[i:end])
 	}
 
 	wg.Wait()
