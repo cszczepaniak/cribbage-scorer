@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestScoreHand(t *testing.T) {
+func BenchmarkScoreHand(b *testing.B) {
 	tests := []struct {
 		desc     string
 		hand     []string
@@ -71,11 +71,14 @@ func TestScoreHand(t *testing.T) {
 		expScore: 1,
 	}}
 	for _, tc := range tests {
-		hand, cut := testutils.MakeHandAndCut(t, tc.hand, tc.cut)
+		tc := tc
+		hand, cut := testutils.MakeHandAndCut(b, tc.hand, tc.cut)
 
-		score, err := ScoreHand(hand, cut, tc.isCrib)
-		require.NoError(t, err)
-		assert.Equal(t, tc.expScore, score)
+		b.Run(tc.desc, func(b *testing.B) {
+			score, err := ScoreHand(hand, cut, tc.isCrib)
+			require.NoError(b, err)
+			assert.Equal(b, tc.expScore, score)
+		})
 	}
 }
 
