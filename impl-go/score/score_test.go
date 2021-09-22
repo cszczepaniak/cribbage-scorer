@@ -5,7 +5,6 @@ import (
 
 	"github.com/cszczepaniak/cribbage-scorer/testutils"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func BenchmarkScoreHand(b *testing.B) {
@@ -75,8 +74,7 @@ func BenchmarkScoreHand(b *testing.B) {
 		hand, cut := testutils.MakeHandAndCut(b, tc.hand, tc.cut)
 
 		b.Run(tc.desc, func(b *testing.B) {
-			score, err := ScoreHand(hand, cut, tc.isCrib)
-			require.NoError(b, err)
+			score := ScoreHand(hand, cut, tc.isCrib)
 			assert.Equal(b, tc.expScore, score)
 		})
 	}

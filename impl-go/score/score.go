@@ -10,11 +10,7 @@ var (
 	ErrInvalidHandSize = errors.New(`a hand must have exactly four cards in it`)
 )
 
-func ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) (int, error) {
-	return scoreHand(hand, cut, isCrib), nil
-}
-
-func scoreHand(hand []cards.Card, cut cards.Card, isCrib bool) int {
+func ScoreHand(hand []cards.Card, cut cards.Card, isCrib bool) int {
 	allCards := [5]cards.Card{hand[0], hand[1], hand[2], hand[3], cut}
 	rankCounts := rankCounts{}
 	values := [5]int{}
