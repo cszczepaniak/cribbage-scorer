@@ -9,7 +9,7 @@ edition = "2018"
 [dependencies]
 itertools = "0.10"
 num_cpus = "0.2"
-crossbeam-utils = "0.8.5"
+crossbeam-utils = "0.8.7"
 
 [dev-dependencies]
 claim = "0.5"
